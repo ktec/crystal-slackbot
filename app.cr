@@ -1,8 +1,9 @@
 require "amethyst"
 require "option_parser"
+require "slack"
 
 class WorldController < Base::Controller
-  actions :hello
+  actions :hello, :command, :webhook
 
   view "hello", "#{__DIR__}/views"
   def hello
@@ -11,12 +12,35 @@ class WorldController < Base::Controller
       format.html { render "hello" }
     end
   end
+
+  view "command", "#{__DIR__}/views"
+  def command
+    request = HTTP::Request.new "POST", "/", body: "token=..."
+    command = Slack::SlashCommand.from_request(request)
+    respond_to do |format|
+      @command = command.text
+      format.html { render "command" }
+    end
+  end
+
+  view "webhook", "#{__DIR__}/views"
+  def webhook
+    hook = Slack::IncomingWebHook.new("web hook message from crystal", channel: "#general")
+    hook.send_to "https://hooks.slack.com/services/..."
+    respond_to do |format|
+      @message = "Message Sent!"
+      format.html { render "webhook" }
+    end
+  end
+
 end
 
 class HelloWorldApp < Base::App
   routes.draw do
-    all "/",      "world#hello"
     get "/hello", "world#hello"
+    get "/command", "world#command"
+    get "/webhook", "world#webhook"
+    all "/",      "world#hello"
     register WorldController
   end
 end
