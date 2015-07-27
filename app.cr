@@ -25,7 +25,13 @@ class WorldController < Base::Controller
 
   view "webhook", "#{__DIR__}/views"
   def webhook
-    hook = Slack::IncomingWebHook.new("web hook message from crystal", channel: "#general")
+    hook = Slack::IncomingWebHook.new(
+      "web hook message from crystal",
+      channel: "#general",
+      username: "new-bot-name",
+      icon_url: "https://slack.com/img/icons/app-57.png",
+      icon_emoji: ":ghost:"
+    )
     hook.send_to "https://hooks.slack.com/services/..."
     respond_to do |format|
       @message = "Message Sent!"
